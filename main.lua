@@ -1,3 +1,5 @@
+-- Authors: Marley Holt-Williams
+
 local Globals = require "src.Globals"
 local Push = require "libs.push"
 local Sounds = require "src.game.Sounds"
@@ -45,6 +47,11 @@ function love.keypressed(key)
     elseif key == "return" and gameState=="start" then
         gameState = "play"
         stagemanager:setStage(1)
+    -- Similar syntax added just re engineered what was already there 
+    elseif gameState == "complete" then
+        gameState = "play"
+        player:nextStage(stagemanager:currentStage())
+        stagemanager:setStage(2)    
 
     else
         player:keypressed(key) 
@@ -73,6 +80,12 @@ function love.update(dt)
         camera:update(dt)
         camera:follow(
             math.floor(player.x+48), math.floor(player.y))
+    
+        if player.gems >= 3 then
+            gameState = "complete"
+            stagemanager:currentStage():stopMusic()
+            Sounds["level_completed"]:play()
+        end 
 
     elseif gameState == "start" then
 
@@ -92,6 +105,8 @@ function love.draw()
         drawStartState()
     elseif gameState == "over" then
         drawGameOverState()
+    elseif gameState == "complete" then
+        drawCompleteState()    
     else --Error, should not happen
         love.graphics.setColor(1,1,0) -- Yellow
         love.graphics.printf("Error", 0,20,gameWidth,"center")
@@ -138,4 +153,12 @@ function drawGameOverState()
     love.graphics.printf("Total Score "..player.score,0,110,gameWidth,"center")
 
     love.graphics.printf("Press any key for Start Screen", 0,150,gameWidth,"center")
+end
+
+function drawCompleteState()
+    love.graphics.setColor(0.2, 0.5, 0.2)
+    -- Took syntax from the other states to decide sizing
+    love.graphics.printf("Stage Complete", titleFont, 0, 80, gameWidth, "center")
+    love.graphics.setColor(1,1,1)
+    love.graphics.printf("Press any key to go to the next stage...", 0, 150, gameWidth, "center")
 end

@@ -32,6 +32,11 @@ function Boar:init(type) Enemy:init() -- superclass const.
     self.hitboxes = {}
     self.hurtboxes = {}
 
+    -- Thought adding text over the mob would be cool like an old arcade game 
+    self.damageTexts = {}
+    -- For the particles 
+    self.deathParticles = nil 
+
     self.hp = 20
     self.score = 200
     self.damage = 20
@@ -62,6 +67,20 @@ end
     
 
 function Boar:update(dt, stage)
+    -- For the damage numbers
+    for i = #self.damageTexts, 1, -1 do
+        local d = self.damageTexts[i]
+        d.t = d.t - dt
+        d.y = d.y - 20 * dt
+        if d.t <= 0 then table.remove(self.damageTexts, i) end
+    end
+    -- For the death effect
+    if self.deathParticles then
+        self.deathParticles.t = self.deathParticles.t + dt
+        if self.deathParticles.t > 0.5 then
+            self.deathParticles = nil
+        end
+    end
     if self.state == "walk" then
         if not stage:bottomCollision(self,1,0) then -- not on solid ground
             self.y = self.y + 32*dt -- fall 
@@ -90,9 +109,11 @@ function Boar:hit(damage, direction)
     self.hp = self.hp - damage
     self.state = "hit"
     Sounds["mob_hurt"]:play()
-
+    -- Simple and keep it to one line 
+    table.insert(self.damageTexts, {value = damage, x = self.x, y = self.y, t = 1})
     if self.hp <= 0 then
         self.died = true
+        self:spawnDeathParticles()
     end
 
     Timer.after(1, function() self:endHit(direction) end)
@@ -100,11 +121,36 @@ function Boar:hit(damage, direction)
 
 end
 
+
+function Boar:spawnDeathParticles()
+    self.deathParticles = {x = self.x, y = self.y, t = 0}
+end
+
+
 function Boar:endHit(direction)
     if self.dir == direction then
         self:changeDirection()
     end
     self.state = "walk"
 end
+
+function Boar:draw()
+    self.animations[self.state]:draw(self.sprites[self.state],
+        math.floor(self.x), math.floor(self.y))
+    for _, d in ipairs(self.damageTexts) do
+        love.graphics.setColor(1, 0.2, 0.2, d.t)
+        love.graphics.print(d.value, d.x, d.y)
+    end
+    if self.deathParticles then
+        local p = self.deathParticles
+        -- Red to emulate blood
+        love.graphics.setColor(1, 0, 0, 1) 
+        -- Red blot that quickly disapears like a slash
+        love.graphics.polygon("fill", p.x+20, p.y+16, p.x+28, p.y+12, p.x+26, p.y+22, p.x+22, p.y+24)
+
+    end
+    love.graphics.setColor(1,1,1,1) 
+end
+
 
 return Boar

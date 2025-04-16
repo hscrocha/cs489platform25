@@ -5,6 +5,9 @@ sounds["music_adventure"] = love.audio.newSource("sounds/timbeek/8Bit_Adventure.
 sounds["music_adventure"]:setVolume(0.3)
 sounds["music_surfrock"] = love.audio.newSource("sounds/timbeek/Surf_Rock_Light.wav","static")
 sounds["music_surfrock"]:setVolume(0.3)
+-- Pretty much the same code as above 
+sounds["music_newlevel"] = love.audio.newSource("sounds/timbeek/8-bit_newmusic.wav","static")
+sounds["music_newlevel"]:setVolume(0.3)
 -- Add this to the file
 sounds["attack1"] = love.audio.newSource("sounds/leohpaz/Slash.wav","static")
 sounds["attack2"] = love.audio.newSource("sounds/leohpaz/Claw.wav","static")
